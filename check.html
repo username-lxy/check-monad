@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Monad Airdrop Claim</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="monad.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(135deg, #6a1b9a, #ff80ab, #00eaff);
+            background-size: 400% 400%;
+            animation: gradientBackground 6s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientBackground {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(20, 20, 30, 0.85);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(12px);
+            width: 100%;
+            max-width: 550px;
+            margin: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #00eaff;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(0, 234, 255, 0.8);
+            white-space: nowrap;
+        }
+
+        .subtitle {
+            color: #ffffff;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        input {
+            padding: 12px;
+            font-size: 16px;
+            width: 100%;
+            max-width: 350px;
+            margin: 10px 0;
+            border-radius: 25px;
+            border: 1px solid #00eaff;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #ff80ab;
+            box-shadow: 0 0 15px rgba(255, 128, 171, 0.5);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        button {
+            padding: 12px 30px;
+            background: linear-gradient(45deg, #ff80ab, #00eaff);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0, 234, 255, 0.4);
+            touch-action: manipulation;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 234, 255, 0.6);
+        }
+
+        .progress-container {
+            display: none;
+            margin: 20px auto;
+            width: 100%;
+            max-width: 350px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 234, 255, 0.3);
+            padding: 0;
+        }
+
+        .progress-bar {
+            width: 0;
+            height: 10px;
+            background: linear-gradient(45deg, #00eaff, #ff80ab);
+            transition: width 0.1s linear;
+            display: block;
+        }
+
+        .progress-text {
+            color: #00eaff;
+            font-size: 1rem;
+            margin-top: 10px;
+            text-shadow: 0 0 5px rgba(0, 234, 255, 0.8);
+            display: none;
+        }
+
+        .error-message {
+            display: none;
+            color: #ff4d4d;
+            background: rgba(255, 77, 77, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-size: 1rem;
+            text-shadow: 0 0 5px rgba(255, 77, 77, 0.8);
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .airdrop-count {
+            margin: 20px 0;
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #00eaff;
+            text-shadow: 0 0 10px rgba(0, 234, 255, 0.8);
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            overflow: auto;
+        }
+
+        .modal-content {
+            background: rgba(255, 77, 77, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0, 234, 255, 0.5);
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .modal-content h2 {
+            color: #fffcfc;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .modal-content img {
+            width: 100%;
+            max-width: 350px;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+
+        .modal-content p {
+            color: #fffcfc;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+
+        .modal-content button {
+            background: #ff80ab;
+            padding: 10px 25px;
+            font-size: 16px;
+        }
+
+        .social-links {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .social-links a {
+            color: #00eaff;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+        }
+
+        .social-links a:hover {
+            color: #ff80ab;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 6vw;
+                margin: 10px;
+                max-width: 95%;
+            }
+
+            h1 {
+                font-size: clamp(1.8rem, 5vw, 2.2rem);
+                white-space: normal;
+            }
+
+            .subtitle,
+            .progress-text,
+            .error-message {
+                font-size: clamp(0.8rem, 3vw, 0.9rem);
+            }
+
+            .airdrop-count {
+                font-size: clamp(1.5rem, 4vw, 1.8rem);
+            }
+
+            input,
+            .progress-container,
+            button {
+                max-width: 100%;
+            }
+
+            button {
+                width: 100%;
+                max-width: 300px;
+                padding: 12px;
+                font-size: clamp(14px, 3.5vw, 15px);
+            }
+
+            .modal-content {
+                padding: 6vw;
+                max-width: 95%;
+            }
+
+            .modal-content img {
+                max-width: 80vw;
+            }
+
+            .modal-content button {
+                font-size: clamp(14px, 3.5vw, 15px);
+            }
+
+            .social-links {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .social-links a {
+                font-size: clamp(0.8rem, 3vw, 0.9rem);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Monad Airdrop Claim</h1>
+        <p class="subtitle">Check your eligibility and claim your Monad tokens!</p>
+        <input type="text" id="walletAddress" placeholder="Enter your wallet address" aria-label="Wallet Address">
+        <button onclick="checkAirdrop()">Check & Claim Airdrop</button>
+        <div class="error-message" id="errorMessage"></div>
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="progress-text" id="progressText">Checking your wallet address...</div>
+        <div class="airdrop-count" id="airdropCount">Airdrop: 0 $MON</div>
+        <div class="social-links">
+            <a href="https://x.com/monad" target="_blank">Follow us on Twitter</a>
+            <a href="https://discord.com/invite/monad" target="_blank">Join our Discord</a>
+        </div>
+    </div>
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <h2>Oops, You've Been Fooled!</h2>
+            <img src="" id="funnyImage" alt="Funny Airdrop Image">
+            <p>You just got pranked! 😂</p>
+            <p>Take a screenshot and share it to prank your friends! 😎</p>
+            <button onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+
+    <script>
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 3000);
+        }
+
+        function checkAirdrop() {
+            const walletAddress = document.getElementById('walletAddress').value.trim();
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const airdropCount = document.getElementById('airdropCount');
+
+            progressContainer.style.display = 'none';
+            progressBar.style.width = '0';
+            progressText.style.display = 'none';
+            airdropCount.style.display = 'none';
+
+            if (!walletAddress) {
+                showError("Please enter a wallet address!");
+                return;
+            }
+
+            if (!/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
+                showError("Invalid Ethereum wallet address!");
+                return;
+            }
+
+            // Show progress bar and text
+            progressContainer.style.display = 'block';
+            progressText.style.display = 'block';
+            progressText.textContent = "Checking your wallet address...";
+
+            // Simulate progress bar animation
+            let progress = 0;
+            const progressSteps = [
+                { percent: 30, text: "Verifying wallet eligibility..." },
+                { percent: 60, text: "Checking airdrop allocation..." },
+                { percent: 100, text: "Finalizing claim..." }
+            ];
+            let stepIndex = 0;
+
+            const progressInterval = setInterval(() => {
+                progress += 1;
+                progressBar.style.width = `${progress}%`;
+
+                if (progress >= progressSteps[stepIndex].percent) {
+                    progressText.textContent = progressSteps[stepIndex].text;
+                    stepIndex++;
+                }
+
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                    progressContainer.style.display = 'none';
+                    progressText.style.display = 'none';
+                    startAirdropCount();
+                }
+            }, 30);
+        }
+
+        function startAirdropCount() {
+            const airdropCount = document.getElementById('airdropCount');
+            const startCount = Math.floor(Math.random() * (10000 - 5000 + 1)) + 5000;
+            const targetCount = Math.floor(Math.random() * (50000 - 20000 + 1)) + 20000;
+            let currentCount = startCount;
+            const duration = 3000;
+            const steps = 20;
+            const increment = (targetCount - startCount) / steps;
+            const interval = duration / steps;
+
+            airdropCount.style.display = 'block';
+            airdropCount.textContent = `Airdrop: ${Math.floor(currentCount)} $MON`;
+
+            let stepCount = 0;
+            const counter = setInterval(() => {
+                currentCount += increment;
+                stepCount++;
+                if (stepCount >= steps) {
+                    currentCount = targetCount;
+                    clearInterval(counter);
+
+                    setTimeout(() => {
+                        showFunnyImage();
+                    }, 1000);
+                }
+                airdropCount.textContent = `Airdrop: ${Math.floor(currentCount)} $MON`;
+            }, interval);
+        }
+
+        function showFunnyImage() {
+            const modal = document.getElementById('modal');
+            const funnyImage = document.getElementById('funnyImage');
+            const messageElement = document.querySelector('.modal-content p'); // Select the first <p> for the message
+
+            const imageMessagePairs = [
+                { image: "img11.gif", message: "Umm, congrats, I guess?" },
+                { image: "img12.gif", message: "Oh, great." },
+                { image: "img11.gif", message: "Wow, almost made it." },
+                { image: "img12.gif", message: "Okay, so you were this close." },
+                { image: "img11.gif", message: "Ugh, so close to being rich." },
+                { image: "img12.gif", message: "Wow, just wow." },
+            ];
+
+            const randomPair = imageMessagePairs[Math.floor(Math.random() * imageMessagePairs.length)];
+
+            funnyImage.src = randomPair.image;
+            messageElement.textContent = randomPair.message;
+
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.style.display = 'none';
+        }
+
+        document.getElementById('walletAddress').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkAirdrop();
+            }
+        });
+    </script>
+</body>
+
+</html>
