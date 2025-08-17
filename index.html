@@ -426,27 +426,41 @@
             }, interval);
         }
 
-        function showFunnyImage() {
-            const modal = document.getElementById('modal');
-            const funnyImage = document.getElementById('funnyImage');
-            const messageElement = document.querySelector('.modal-content p'); // Select the first <p> for the message
+function showFunnyImage() {
+    const modal = document.getElementById('modal');
+    const funnyImage = document.getElementById('funnyImage');
+    const messageElement = document.getElementById('modalDescription');
 
-            const imageMessagePairs = [
-                { image: "img11.gif", message: "Umm, congrats, I guess?" },
-                { image: "img12.gif", message: "Oh, great." },
-                { image: "img11.gif", message: "Wow, almost made it." },
-                { image: "img12.gif", message: "Okay, so you were this close." },
-                { image: "img11.gif", message: "Ugh, so close to being rich." },
-                { image: "img12.gif", message: "Wow, just wow." },
-            ];
+    const imageMessagePairs = [
+        { image: "img11.gif", message: "Umm, congrats, I guess?" },
+        { image: "img12.gif", message: "Oh, great." },
+        { image: "img11.gif", message: "Wow, almost made it." },
+        { image: "img12.gif", message: "Okay, so you were this close." },
+        { image: "img11.gif", message: "Ugh, so close to being rich." },
+        { image: "img12.gif", message: "Wow, just wow." },
+    ];
 
-            const randomPair = imageMessagePairs[Math.floor(Math.random() * imageMessagePairs.length)];
+    const randomPair = imageMessagePairs[Math.floor(Math.random() * imageMessagePairs.length)];
 
-            funnyImage.src = randomPair.image;
-            messageElement.textContent = randomPair.message;
+    // Create a new Image object to preload
+    const img = new Image();
+    img.src = randomPair.image;
 
-            modal.style.display = 'flex';
-        }
+    img.onload = () => {
+        // Image is loaded, now set the src and show the modal
+        funnyImage.src = randomPair.image;
+        messageElement.textContent = randomPair.message;
+        modal.style.display = 'flex';
+        modal.focus();
+    };
+
+    img.onerror = () => {
+        // Handle image load failure (optional)
+        messageElement.textContent = "Failed to load image, but you still got pranked!";
+        modal.style.display = 'flex';
+        modal.focus();
+    };
+}
 
         function closeModal() {
             const modal = document.getElementById('modal');
