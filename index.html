@@ -25,6 +25,7 @@
             min-height: 100vh;
             margin: 0;
             overflow-x: hidden;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
 
         @keyframes gradientBackground {
@@ -182,7 +183,8 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            overflow: auto;
+            overflow-y: auto;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
 
         .modal-content {
@@ -195,6 +197,7 @@
             box-shadow: 0 10px 40px rgba(0, 234, 255, 0.5);
             backdrop-filter: blur(10px);
             animation: fadeIn 0.5s ease-in;
+            overflow-y: auto;
         }
 
         .modal-content h2 {
@@ -210,8 +213,9 @@
             height: auto;
             border-radius: 10px;
             margin-bottom: 15px;
+            max-height: 40vh;
+            object-fit: contain;
         }
-
 
         .modal-content p {
             color: #fffcfc;
@@ -225,6 +229,8 @@
             background: #ff80ab;
             padding: 10px 25px;
             font-size: 16px;
+            width: 100%;
+            max-width: 250px;
         }
 
         .social-links {
@@ -247,50 +253,63 @@
 
         @media (max-width: 600px) {
             .container {
-                padding: 6vw;
+                padding: 20px;
                 margin: 10px;
                 max-width: 95%;
             }
 
             h1 {
-                font-size: clamp(1.8rem, 5vw, 2.2rem);
+                font-size: 1.8rem;
                 white-space: normal;
             }
 
             .subtitle,
             .progress-text,
             .error-message {
-                font-size: clamp(0.8rem, 3vw, 0.9rem);
+                font-size: 0.9rem;
             }
 
             .airdrop-count {
-                font-size: clamp(1.5rem, 4vw, 1.8rem);
+                font-size: 1.6rem;
             }
 
             input,
-            .progress-container,
-            button {
+            .progress-container {
                 max-width: 100%;
             }
 
             button {
-                width: 100%;
-                max-width: 300px;
-                padding: 12px;
-                font-size: clamp(14px, 3.5vw, 15px);
+                padding: 10px;
+                font-size: 14px;
+                margin: 10px auto;
+                max-width: 100%;
+                display: block;
             }
 
             .modal-content {
-                padding: 6vw;
-                max-width: 95%;
+                padding: 15px;
+                max-width: 95vw;
+                max-height: 85vh;
             }
 
             .modal-content img {
                 max-width: 80vw;
+                max-height: 35vh;
+            }
+
+            .modal-content h2 {
+                font-size: 1.5rem;
+                margin-bottom: 15px;
+            }
+
+            .modal-content p {
+                font-size: 1.2rem;
+                margin-bottom: 15px;
             }
 
             .modal-content button {
-                font-size: clamp(14px, 3.5vw, 15px);
+                font-size: 14px;
+                padding: 8px 20px;
             }
 
             .social-links {
@@ -299,7 +318,7 @@
             }
 
             .social-links a {
-                font-size: clamp(0.8rem, 3vw, 0.9rem);
+                font-size: 0.9rem;
             }
         }
     </style>
@@ -318,20 +337,21 @@
         <div class="progress-text" id="progressText">Checking your wallet address...</div>
         <div class="airdrop-count" id="airdropCount">Airdrop: 0 $MON</div>
         <div class="social-links">
-            <a href="https://x.com/monad" target="_blank">Follow us on Twitter</a>
-            <a href="https://discord.com/invite/monad" target="_blank">Join our Discord</a>
-        </div>
-    </div>
-    <div class="modal" id="modal">
-        <div class="modal-content">
-            <h2>Oops, You've Been Fooled!</h2>
-            <img src="" id="funnyImage" alt="Funny Airdrop Image">
-            <p>You just got pranked! 😂</p>
-            <p>Take a screenshot and share it to prank your friends! 😎</p>
-            <button onclick="closeModal()">Close</button>
+            <a href="https://x.com/monad" target="_blank" aria-label="Follow us on Twitter">Follow us on Twitter</a>
+            <a href="https://discord.com/invite/monad" target="_blank" aria-label="Join our Discord">Join our
+                Discord</a>
         </div>
     </div>
 
+    <div class="modal" id="modal" role="dialog" aria-labelledby="modalTitle" aria-describedby="modalDescription">
+        <div class="modal-content">
+            <h2 id="modalTitle">Oops, You've Been Fooled!</h2>
+            <img src="" id="funnyImage" alt="Funny Airdrop Image">
+            <p id="modalDescription"></p>
+            <p>Take a screenshot and share it to prank your friends! 😎</p>
+            <button onclick="closeModal()" aria-label="Close modal">Close</button>
+        </div>
+    </div>
 
     <script>
         function showError(message) {
@@ -365,12 +385,10 @@
                 return;
             }
 
-            // Show progress bar and text
             progressContainer.style.display = 'block';
             progressText.style.display = 'block';
             progressText.textContent = "Checking your wallet address...";
 
-            // Simulate progress bar animation
             let progress = 0;
             const progressSteps = [
                 { percent: 30, text: "Verifying wallet eligibility..." },
@@ -417,7 +435,6 @@
                 if (stepCount >= steps) {
                     currentCount = targetCount;
                     clearInterval(counter);
-
                     setTimeout(() => {
                         showFunnyImage();
                     }, 1000);
@@ -426,50 +443,54 @@
             }, interval);
         }
 
-function showFunnyImage() {
-    const modal = document.getElementById('modal');
-    const funnyImage = document.getElementById('funnyImage');
-    const messageElement = document.getElementById('modalDescription');
+        function showFunnyImage() {
+            const modal = document.getElementById('modal');
+            const funnyImage = document.getElementById('funnyImage');
+            const messageElement = document.getElementById('modalDescription');
 
-    const imageMessagePairs = [
-        { image: "img11.gif", message: "Umm, congrats, I guess?" },
-        { image: "img12.gif", message: "Oh, great." },
-        { image: "img11.gif", message: "Wow, almost made it." },
-        { image: "img12.gif", message: "Okay, so you were this close." },
-        { image: "img11.gif", message: "Ugh, so close to being rich." },
-        { image: "img12.gif", message: "Wow, just wow." },
-    ];
+            const imageMessagePairs = [
+                { image: "img11.gif", message: "Umm, congrats, I guess?" },
+                { image: "img12.gif", message: "Oh, great." },
+                { image: "img11.gif", message: "Wow, almost made it." },
+                { image: "img12.gif", message: "Okay, so you were this close." },
+                { image: "img11.gif", message: "Ugh, so close to being rich." },
+                { image: "img12.gif", message: "Wow, just wow." },
+            ];
 
-    const randomPair = imageMessagePairs[Math.floor(Math.random() * imageMessagePairs.length)];
+            const randomPair = imageMessagePairs[Math.floor(Math.random() * imageMessagePairs.length)];
 
-    // Create a new Image object to preload
-    const img = new Image();
-    img.src = randomPair.image;
+            const img = new Image();
+            img.src = randomPair.image;
 
-    img.onload = () => {
-        // Image is loaded, now set the src and show the modal
-        funnyImage.src = randomPair.image;
-        messageElement.textContent = randomPair.message;
-        modal.style.display = 'flex';
-        modal.focus();
-    };
+            img.onload = () => {
+                funnyImage.src = randomPair.image;
+                messageElement.textContent = randomPair.message;
+                modal.style.display = 'flex';
+                modal.focus();
+            };
 
-    img.onerror = () => {
-        // Handle image load failure (optional)
-        messageElement.textContent = "Failed to load image, but you still got pranked!";
-        modal.style.display = 'flex';
-        modal.focus();
-    };
-}
+            img.onerror = () => {
+                messageElement.textContent = "Failed to load image, but you still got pranked!";
+                modal.style.display = 'flex';
+                modal.focus();
+            };
+        }
 
         function closeModal() {
             const modal = document.getElementById('modal');
             modal.style.display = 'none';
+            document.getElementById('walletAddress').focus();
         }
 
         document.getElementById('walletAddress').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 checkAirdrop();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
             }
         });
     </script>
